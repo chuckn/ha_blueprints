@@ -1,7 +1,7 @@
 blueprint:
-  name: Philips Tap Dial Sonos Controller
+  name: Native Hue Tap Dial Sonos Controller
   description: "Use Philips Tap Dial to control Sonos.
-    Use an entity id which ends with '_action', e.g. 'sensor.bedroom_bed_tap_dial_switch_action'"
+    Sensor for Philips Hue Tap dial switch to use - just select the battery sensor that is exposed
 
   domain: automation
   input:
@@ -15,7 +15,6 @@ blueprint:
           filter:
             - domain: sensor
               integration: hue
-
 
     sonos_controller:
       name: Sonos controller device
@@ -61,25 +60,40 @@ variables:
   volume_dial_slow: !input volume_dial_slow
   volume_dial_step: !input volume_dial_step
 
-mode: restart
-max_exceeded: silent
+mode: parallel
+#max_exceeded: silent
 trigger:
-  - platform: state
-    entity_id: !input button_sensor
-
+  - platform: event
+    event_type: hue_event
 condition:
   - condition: template
     value_template: >-
       {{trigger.event.data.device_id == device_id(tap_dial_used)}}
-    #value_template: >-
-    #  {{ trigger.to_state.state.startswith('button_') or
-    #  trigger.to_state.state.startswith('dial_') }}
 
 action:
   - variables:
-      action: "{{ trigger.to_state.state }}"
+      #action: "{{ trigger.to_state.state }}"
+      action: "{{ trigger.event.data.type }}"
+      action_sub: "{{ trigger.event.data.subtype }}"
+      action_steps: "{{ trigger.event.data.steps }}"
   - choose:
       #BUTTON 1
+      - conditions:
+          - condition: template
+            value_template: "{{ action == 'short_release' }}"
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ action_sub == 1 }}"
+                sequence:
+                  - service: input_text.set_value
+                    metadata: {}
+                    data:
+                      value: !input media_controller
+                    target:
+                      entity_id: !input helper_input
+
       - conditions: "{{ action == 'button_1_press_release' }}"
         sequence:
           - service: media_player.media_play_pause
@@ -137,6 +151,21 @@ action:
                       {{ state_attr(sonos_controller,
                       'group_members')[repeat.index - 1] }}
 
+      - conditions:
+          - condition: template
+            value_template: "{{ action == 'long_press' }}"
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ action_sub == 1 }}"
+                sequence:
+                  - service: media_player.media_play_pause
+                    metadata: {}
+                    target:
+                      entity_id: !input media_controller
+                    data: {}
+
       - conditions: "{{ action == 'dial_rotate_left_slow' }}"
         sequence:
           - repeat:
@@ -174,56 +203,50 @@ action:
                       'group_members')[repeat.index - 1] }}
 
       # DIAL RIGHT
-      - conditions: "{{ action == 'dial_rotate_right_step' }}"
+      - conditions:
+          - condition: template
+            value_template: "{{ action_sub == 'clock_wise' }}"
         sequence:
-          - repeat:
-              count: >-
-                {{ state_attr(sonos_controller, 'group_members') | length
-                }}
-              sequence:
-                - service: media_player.volume_set
-                  data:
-                    volume_level: >-
-                      {{ [state_attr(state_attr(sonos_controller,
-                      'group_members')[repeat.index - 1], 'volume_level') + volume_dial_step,
-                      1] | min | float }}
-                  target:
-                    entity_id: >-
-                      {{ state_attr(sonos_controller,
-                      'group_members')[repeat.index - 1] }}
-
-      - conditions: "{{ action == 'dial_rotate_right_slow' }}"
+          - if:
+              - condition: template
+                value_template: "{{ states(helper_input)[:5] == 'media'}}"
+            then:
+              - service: media_player.volume_set
+                metadata: {}
+                data:
+                  volume_level: >-
+                    {{state_attr(states(helper_input),
+                    'volume_level') + (trigger.event.data.steps / 1500)}}
+                target:
+                  entity_id: !input media_controller
+            else:
+              - service: light.turn_on
+                metadata: {}
+                data:
+                  brightness_step_pct: "{{ (trigger.event.data.steps / 1500)* 100 }}"
+                target:
+                  entity_id: "{{ states(helper_input) }}"
+      - conditions:
+          - condition: template
+            value_template: "{{ action_sub == 'counter_clock_wise' }}"
         sequence:
-          - repeat:
-              count: >-
-                {{ state_attr(sonos_controller, 'group_members') | length
-                }}
-              sequence:
-                - service: media_player.volume_set
-                  data:
-                    volume_level: >-
-                      {{ [state_attr(state_attr(sonos_controller,
-                      'group_members')[repeat.index - 1], 'volume_level') + volume_dial_slow,
-                      1] | min | float }}
-                  target:
-                    entity_id: >-
-                      {{ state_attr(sonos_controller,
-                      'group_members')[repeat.index - 1] }}
-
-      - conditions: "{{ action == 'dial_rotate_right_fast' }}"
-        sequence:
-          - repeat:
-              count: >-
-                {{ state_attr(sonos_controller, 'group_members') | length
-                }}
-              sequence:
-                - service: media_player.volume_set
-                  data:
-                    volume_level: >-
-                      {{ [state_attr(state_attr(sonos_controller,
-                      'group_members')[repeat.index - 1], 'volume_level') + volume_dial_fast,
-                      1] | min | float }}
-                  target:
-                    entity_id: >-
-                      {{ state_attr(sonos_controller,
-                      'group_members')[repeat.index - 1] }}
+          - if:
+              - condition: template
+                value_template: "{{ states(helper_input)[:5] == 'media'}}"
+            then:
+              - service: media_player.volume_set
+                metadata: {}
+                data:
+                  volume_level: >-
+                    {{state_attr(states(helper_input),
+                    'volume_level') - (trigger.event.data.steps / 1500)}}
+                target:
+                  entity_id: "{{ states(helper_input) }}"
+            else:
+              - service: light.turn_on
+                metadata: {}
+                data:
+                  brightness_step_pct: "{{ (trigger.event.data.steps / 1500)* -100 }}"
+                target:
+                  entity_id: "{{ states(helper_input) }}"
+max: 15
