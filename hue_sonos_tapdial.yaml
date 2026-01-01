@@ -52,7 +52,7 @@ blueprint:
           min: 0
           max: 1
           step: 0.01
-    helper_input:
+    helper_input_txt:
       name: helper input
       description: You will need to create an input_text helper for this blueprint.  Select it here.
       selector:
@@ -67,7 +67,7 @@ variables:
   volume_dial_fast: !input volume_dial_fast
   volume_dial_slow: !input volume_dial_slow
   volume_dial_step: !input volume_dial_step
-  helper_input: !input helper_input
+  helper_input: !input helper_input_txt
 
 mode: parallel
 #max_exceeded: silent
