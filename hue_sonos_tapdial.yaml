@@ -72,7 +72,6 @@ condition:
 
 action:
   - variables:
-      #action: "{{ trigger.to_state.state }}"
       action: "{{ trigger.event.data.type }}"
       action_sub: "{{ trigger.event.data.subtype }}"
       action_steps: "{{ trigger.event.data.steps }}"
