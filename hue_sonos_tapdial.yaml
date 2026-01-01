@@ -1,7 +1,7 @@
 blueprint:
   name: Native Hue Tap Dial Sonos Controller
   description: "Use Philips Tap Dial to control Sonos.
-    Sensor for Philips Hue Tap dial switch to use - just select the battery sensor that is exposed
+    Sensor for Philips Hue Tap dial switch to use - just select the battery sensor that is exposed"
 
   domain: automation
   input:
