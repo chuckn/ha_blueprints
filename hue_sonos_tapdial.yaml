@@ -52,7 +52,15 @@ blueprint:
           min: 0
           max: 1
           step: 0.01
-
+    helper_input:
+      name: helper input
+      description: You will need to create an input_text helper for this blueprint.  Select it here.
+      selector:
+        entity:
+          multiple: false
+          filter:
+            - domain:
+                - input_text
 variables:
   sonos_controller: !input sonos_controller
   button_sensor: !input button_sensor
