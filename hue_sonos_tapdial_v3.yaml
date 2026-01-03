@@ -102,5 +102,5 @@ action:
                 {{state_attr(states(!input media_controller),
                 'volume_level') - (trigger.event.data.steps / 1500)}}
             target:
-              entity_id: "{{ states(media_controller) }}"
+              entity_id: !input media_controller
 max: 15
