@@ -1,0 +1,106 @@
+blueprint:
+  name: Philips Hue Tap Dial Audio 
+  description: Use the Philips Hue Tap Dial to control speakers volume and queue position.
+  domain: automation
+  input:
+    tap_dial:
+      name: Tap Dial
+      description: The tap dial to use.  just select the battery sensor that is exposed
+      selector:
+        entity:
+          multiple: false
+          filter:
+            - domain: sensor
+              integration: hue
+    media_controller:
+      name: media player device to control
+      description: The media player to be controlled by the Hue Tap Dial.
+      selector:
+        entity:
+          multiple: false
+          filter:
+            - domain:
+                - media_player
+variables:
+  tap_dial_used: !input tap_dial
+  controller: !input media_controller
+mode: parallel
+trigger:
+  - platform: event
+    event_type: hue_event
+condition:
+  - condition: template
+    value_template: >-
+      {{trigger.event.data.device_id == device_id(tap_dial_used)}}
+action:
+  - variables:
+      action: "{{ trigger.event.data.type }}"
+      action_sub: "{{ trigger.event.data.subtype }}"
+      action_steps: "{{ trigger.event.data.steps }}"
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ action == 'short_release' }}"
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ action_sub == 1 }}"
+                sequence:
+                  - service: media_player.media_play
+                    metadata: {}
+                    data: {}
+                    target:
+                      entity_id: !input media_controller
+              - conditions:
+                  - condition: template
+                    value_template: "{{ action_sub == 2 }}"
+                sequence:
+                  - service: media_player.media_next_track
+                    metadata: {}
+                    data: {}
+                    target:
+                      entity_id: !input media_controller
+              - conditions:
+                  - condition: template
+                    value_template: "{{ action_sub == 3 }}"
+                sequence:
+                  - service: media_player.media_previous_track
+                    metadata: {}
+                    data: {}
+                    target:
+                      entity_id: !input media_controller
+              - conditions:
+                  - condition: template
+                    value_template: "{{ action_sub == 4 }}"
+                sequence:
+                  - service: media_player.media_stop
+                    metadata: {}
+                    data: {}
+                    target:
+                      entity_id: !input media_controller
+      - conditions:
+          - condition: template
+            value_template: "{{ action_sub == 'clock_wise' }}"
+        sequence:
+          - service: media_player.volume_set
+            metadata: {}
+            data:
+              volume_level: >-
+                {{state_attr(states(media_controller),
+                'volume_level') + (trigger.event.data.steps / 1500)}}
+            target:
+              entity_id: !input media_controller
+      - conditions:
+          - condition: template
+            value_template: "{{ action_sub == 'counter_clock_wise' }}"
+        sequence:
+          - service: media_player.volume_set
+            metadata: {}
+            data:
+              volume_level: >-
+                {{state_attr(states(media_controller),
+                'volume_level') - (trigger.event.data.steps / 1500)}}
+            target:
+              entity_id: "{{ states(media_controller) }}"
+max: 15
