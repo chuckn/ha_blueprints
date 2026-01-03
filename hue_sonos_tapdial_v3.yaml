@@ -87,7 +87,7 @@ action:
             metadata: {}
             data:
               volume_level: >-
-                {{state_attr(states(!input media_controller),
+                {{state_attr(states(media_controller),
                 'volume_level') + (trigger.event.data.steps / 1500)}}
             target:
               entity_id: !input media_controller
@@ -99,7 +99,7 @@ action:
             metadata: {}
             data:
               volume_level: >-
-                {{state_attr(states(!input media_controller),
+                {{state_attr(states(media_controller),
                 'volume_level') - (trigger.event.data.steps / 1500)}}
             target:
               entity_id: !input media_controller
