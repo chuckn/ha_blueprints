@@ -48,7 +48,7 @@ action:
                   - condition: template
                     value_template: "{{ action_sub == 1 }}"
                 sequence:
-                  - service: media_player.media_play
+                  - service: media_player.media_play_pause
                     metadata: {}
                     data: {}
                     target:
