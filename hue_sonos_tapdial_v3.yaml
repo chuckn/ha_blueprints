@@ -37,8 +37,8 @@ action:
       action: "{{ trigger.event.data.type }}"
       action_sub: "{{ trigger.event.data.subtype }}"
       action_steps: "{{ trigger.event.data.steps }}"
-      curr_vol: {{state_attr(states(controller),'volume_level')}}
-      vol_inc: {{(trigger.event.data.steps / 1500)}}
+      curr_vol: "{{state_attr(states(controller),'volume_level')}}"
+      vol_inc: "{{(trigger.event.data.steps / 1500)}}"
   - choose:
       - conditions:
           - condition: template
