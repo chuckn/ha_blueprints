@@ -38,8 +38,6 @@ action:
       action_sub: "{{ trigger.event.data.subtype }}"
       action_steps: "{{ trigger.event.data.steps }}"
       helper_input: "{{ controller }}"
-      vol_inc: "{{ (trigger.event.data.steps / 1500) }}"
-      curr_vol: "{{ state_attr(helper_input,'volume_level') }}"
   - choose:
       - conditions:
           - condition: template
