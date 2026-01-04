@@ -39,7 +39,7 @@ action:
       action_steps: "{{ trigger.event.data.steps }}"
       helper_input: "{{ controller }}"
       vol_inc: "{{ (trigger.event.data.steps / 1500) }}"
-      curr_vol: "{{ state_attr(states(helper_input),'volume_level') }}"
+      curr_vol: "{{ state_attr(helper_input,'volume_level') }}"
   - choose:
       - conditions:
           - condition: template
@@ -90,7 +90,7 @@ action:
             metadata: {}
             data:
               volume_level: >-
-                {{state_attr(states(helper_input),
+                {{state_attr(helper_input,
                 'volume_level') + (trigger.event.data.steps / 1500)}}
             target:
               entity_id: !input media_controller
@@ -102,7 +102,7 @@ action:
             metadata: {}
             data:
               volume_level: >-
-                {{state_attr(states(helper_input),
+                {{state_attr(helper_input,
                 'volume_level') - (trigger.event.data.steps / 1500)}}
             target:
               entity_id: !input media_controller
