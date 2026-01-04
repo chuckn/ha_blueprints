@@ -37,8 +37,9 @@ action:
       action: "{{ trigger.event.data.type }}"
       action_sub: "{{ trigger.event.data.subtype }}"
       action_steps: "{{ trigger.event.data.steps }}"
+      helper_input: "{{ controller }}"
       vol_inc: "{{ (trigger.event.data.steps / 1500) }}"
-      curr_vol: "{{ state_attr(states(controller),'volume_level') }}"
+      curr_vol: "{{ state_attr(states(helper_input),'volume_level') }}"
   - choose:
       - conditions:
           - condition: template
@@ -89,7 +90,7 @@ action:
             metadata: {}
             data:
               volume_level: >-
-                {{state_attr(states(controller),
+                {{state_attr(states(helper_input),
                 'volume_level') + (trigger.event.data.steps / 1500)}}
             target:
               entity_id: !input media_controller
@@ -101,7 +102,7 @@ action:
             metadata: {}
             data:
               volume_level: >-
-                {{state_attr(states(controller),
+                {{state_attr(states(helper_input),
                 'volume_level') - (trigger.event.data.steps / 1500)}}
             target:
               entity_id: !input media_controller
