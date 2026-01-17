@@ -48,7 +48,7 @@ action:
                   - condition: template
                     value_template: "{{ action_sub == 1 }}"
                 sequence:
-                  - service: media_player.media_play_pause
+                  - service: media_player.media_next_track
                     metadata: {}
                     data: {}
                     target:
@@ -57,7 +57,7 @@ action:
                   - condition: template
                     value_template: "{{ action_sub == 2 }}"
                 sequence:
-                  - service: media_player.media_next_track
+                  - service: media_player.media_stop
                     metadata: {}
                     data: {}
                     target:
@@ -75,7 +75,7 @@ action:
                   - condition: template
                     value_template: "{{ action_sub == 4 }}"
                 sequence:
-                  - service: media_player.media_stop
+                  - service: media_player.media_play_pause
                     metadata: {}
                     data: {}
                     target:
